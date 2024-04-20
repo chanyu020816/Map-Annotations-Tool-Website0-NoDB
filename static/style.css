@@ -537,8 +537,8 @@ label[for="label-size"] {
 }
 
 
-.delete-button {
-    background-color: #FF3A3A;
+.download-button {
+    background-color: #443aff;
     color: white;
     padding: 2px 5px;
     margin: 5px;

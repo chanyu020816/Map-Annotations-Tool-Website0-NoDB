@@ -520,20 +520,20 @@ function updateImageMenu(imageNames) {
         });
         menuItem.appendChild(link);
 
-        const deleteButtonContainer = document.createElement('div'); // 创建一个新的容器元素
-        deleteButtonContainer.style.display = 'inline-block'; // 设置容器为内联块级元素
+        const downloadButtonContainer = document.createElement('div'); // 创建一个新的容器元素
+        downloadButtonContainer.style.display = 'inline-block'; // 设置容器为内联块级元素
 
         // download-button
-        const deleteButton = document.createElement('button');
-        deleteButton.textContent = '刪除圖片';
-        deleteButton.className = 'delete-button';
+        const downloadButton = document.createElement('button');
+        downloadButton.textContent = '下載圖片';
+        downloadButton.className = 'download-button';
 
-        deleteButton.addEventListener('click', () => {
-            deleteImage(index);
+        downloadButton.addEventListener('click', async function () {
+            downloadImage(index)
         });
 
-        // deleteButtonContainer.appendChild(deleteButton); // 将 delete button 放入容器内
-        // menuItem.appendChild(deleteButtonContainer); // 将容器放入菜单项内
+        downloadButtonContainer.appendChild(downloadButton); // 将 download button 放入容器内
+        menuItem.appendChild(downloadButtonContainer); // 将容器放入菜单项内
 
         // 添加勾选框
         const checkbox = document.createElement('span');
@@ -932,6 +932,59 @@ window.addEventListener('beforeunload', function(event) {
     return confirmationMessage;
 });
 */
+
+async function downloadImage(index) {
+    const menuItem = document.getElementById(`menu-item-${index}`);
+    if (!menuItem) return;
+    const imageData = images[index]
+    const imageName = imagesName[index]
+    const downloadImageName = imageName.replace(/\s+/g, '_');
+    console.log(index, downloadImageName)
+
+    try {
+        // 保存图片
+        await fetch('/save_image_for_download', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                image_data: imageData,
+                image_name: imageName
+            })
+        });
+
+        // 下载图片
+        const queryString = `?filenames=${encodeURIComponent(JSON.stringify(imageName))}`;
+        const response = await fetch(`/download_image${queryString}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+
+            // 创建一个 <a> 元素来触发下载
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = downloadImageName + '.jpg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // 释放对象 URL
+            window.URL.revokeObjectURL(url);
+        } else {
+            // 处理下载失败情况
+            console.error('下载失败:', response.statusText);
+        }
+    } catch (error) {
+        console.error('发送请求时出错:', error);
+    }
+}
 
 async function openFolderDialog() {
     const options = {
