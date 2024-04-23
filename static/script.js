@@ -15,7 +15,7 @@ let classSet = 1;
 let annotations = [];
 let format_type = 'yolo'
 let mode ='annotate'
-
+let anno_ids = [];
 const split_size = 480
 const classColors = {
     0: 'red',
@@ -45,7 +45,7 @@ function submitForm(event) {
     });
     const login_mode = document.getElementById('login-mode');
     login_mode.addEventListener('change', function() {
-        classSet = login_mode.value;
+        mode = login_mode.value;
     });
     document.getElementById("form_container").style.display = "none";
     document.querySelector(".content").style.display = "block";
@@ -584,7 +584,7 @@ function updateImageMenu(imageNames) {
         // download-button
         const downloadButton = document.createElement('button');
         downloadButton.textContent = '下載圖片';
-        downloadButton.className = 'download-button';
+        downloadButton.className = 'download-image-button';
 
         downloadButton.addEventListener('click', async function () {
             downloadImage(index)

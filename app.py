@@ -48,14 +48,6 @@ def save_image_for_download():
     
     return jsonify({'message': 'Image Saved Successfully.'})
     
-@app.route('/download_image', methods=['GET'])
-def download_image():
-    filename = request.args.get('filenames').split(',')
-    image_name = re.sub(r'\s+', '_', filename[0])
-    image_name = image_name.replace("\"", "")
-    image_file_path = os.path.join("Annotations", f"Server_images", f'{image_name}.jpg')
-    return send_file(image_file_path, as_attachment=True)
-
 @app.route('/save_image', methods=['POST'])
 def save_image():
     data = request.json
@@ -313,8 +305,16 @@ def download_annotations():
                 zipf.write(image_file_path, arcname=os.path.join("annotations", os.path.basename(image_file_path)))
                 zipf.write(label_file_path, arcname=os.path.join("annotations", os.path.basename(label_file_path)))
 
-    # 提供 zip 文件给前端下载
     return send_file(zip_filename, as_attachment=True)
+
+@app.route('/download_image', methods=['GET'])
+def download_image():
+    filename = request.args.get('filenames').split(',')
+    image_name = re.sub(r'\s+', '_', filename[0])
+    image_name = image_name.replace("\"", "")
+    image_file_path = os.path.join("Annotations", f"Server_images", f'{image_name}.jpg')
+    return send_file(image_file_path, as_attachment=True)
+
 
 if __name__ == '__main__':
     if not os.path.exists("./Annotations"): 
