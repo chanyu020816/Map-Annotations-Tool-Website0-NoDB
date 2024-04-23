@@ -77,7 +77,6 @@ function displaySet(set) {
         const class1ptype = document.getElementById('class1ptype');
         class1ptype.classList.add('ptype', 'active');
         ptype = 1;
-        console.log("Set1")
     } else {
         document.getElementById("form_container").style.display = "none";
         document.querySelector(".content").style.display = "block";
@@ -148,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         menuItemsCompleted.push(currentImageIndex)
         markImageAsCompleted(currentImageIndex); 
-        // complete_label_image();
+        complete_label_image();
     });
 
     document.getElementById('download-button').addEventListener('click', async function () {
@@ -847,18 +846,6 @@ async function complete_label_image() {
                     img_size:  split_size,
                     class_set: classSet,
                     username: localStorage.getItem('username')
-                })
-            });
-            await fetch('/add_labels_db', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    username: localStorage.getItem('username'),
-                    image_name: imageName, 
-                    yolo_labels: label,
-                    class_set: classSet
                 })
             });
             downloadStatus.textContent = '標註成功!';
