@@ -13,6 +13,7 @@ let paddings = []
 let ptype = 1;
 let classSet = 1;
 let annotations = [];
+let parentImagesName = [];
 let format_type = 'yolo'
 let mode ='annotate'
 let anno_ids = [];
@@ -39,14 +40,7 @@ function submitForm(event) {
 
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
-    const login_set = document.getElementById('login-set');
-    login_set.addEventListener('change', function() {
-        classSet = login_set.value;
-    });
-    const login_mode = document.getElementById('login-mode');
-    login_mode.addEventListener('change', function() {
-        mode = login_mode.value;
-    });
+    
     document.getElementById("form_container").style.display = "none";
     document.querySelector(".content").style.display = "block";
     document.querySelector("nav").style.display = "block";
@@ -54,11 +48,10 @@ function submitForm(event) {
     localStorage.setItem('login_set', classSet)
     localStorage.setItem('login_mode', mode)
     displaySet(classSet)
+    displayMode(mode)
 }
 
 function displaySet(set) {
-    
-    console.log(classSet)
     if (classSet === 1) {
         document.getElementById("form_container").style.display = "none";
         document.querySelector(".content").style.display = "block";
@@ -97,29 +90,51 @@ function displaySet(set) {
         ptype = 1;
     }
 }
+
+function displayMode(mode) {
+    if (mode === 'annotate') {
+        document.getElementById("upload-label-button").style.display = "none";
+    } else if (mode === 'modify') {
+        document.getElementById("upload-label-button").style.display = "block";
+    } else {
+        console.error()
+    }
+}
+
 window.onload = function() {
     const username = localStorage.getItem('username');
     const login_set = localStorage.getItem('login_set');
     const login_mode = localStorage.getItem('login_mode');
+
     if (username) {
         document.getElementById("form_container").style.display = "none";
         document.querySelector(".content").style.display = "block";
         document.querySelector("nav").style.display = "block";
+        classSet = login_set
+        mode = login_mode
         displaySet(login_set)
+        displayMode(login_mode)
     }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-     
-    
+    const login_set = document.getElementById('login-set');
+    login_set.addEventListener('change', function() {
+        classSet = login_set.value;
+    });
+    const login_mode = document.getElementById('login-mode');
+    login_mode.addEventListener('change', function() {
+        mode = login_mode.value;
+    });
     document.getElementById("form_container").style.display = "block";
-
-
-
     document.getElementById('upload-button').addEventListener('click', function () {
         document.getElementById('file-input').click();
     });
     document.getElementById('file-input').addEventListener('change', handleFileSelect);
+    document.getElementById('upload-label-button').addEventListener('click', function () {
+        document.getElementById('label-input').click();
+    });
+    document.getElementById('label-input').addEventListener('change', handleLabelSelect);
     document.getElementById('prev-button').addEventListener('click', showPrevImage);
     document.getElementById('next-button').addEventListener('click', showNextImage);
     document.getElementById('reset-button').addEventListener('click', labelreset);
@@ -130,7 +145,6 @@ document.addEventListener('DOMContentLoaded', function() {
     liItems.forEach(li => {
         li.addEventListener('click', function() {
             ptype = parseInt(this.getAttribute('data-ptype'));  
-            
             liItems.forEach(item => {
                 if (item === this) {
                     item.classList.add('ptype', 'active');
@@ -210,35 +224,44 @@ document.addEventListener('DOMContentLoaded', function() {
     */ 
 
     const logoutBtn = document.getElementById('logout-button');
-    logoutBtn.addEventListener('click', function() {
-        localStorage.removeItem('username');
-        localStorage.removeItem('login_set')
-        localStorage.removeItem('login_mode')
-        
-        document.getElementById("form_container").style.display = "block";
-        document.querySelector(".content").style.display = "none";
-        document.querySelector("nav").style.display = "none";
-        document.getElementById("image-menu").style.display = "none";
-        images = [];
-        imagesName = [];
-        currentImageIndex = 0;
-        menuItemsCompleted = [];
-        completedImageName = [];
-        labels = [];
-        prev_index = -1;
-        detections = []; 
-        paddings = [];
-        document.getElementById('image-counter').textContent = '圖片數量 0 / 0';
-        document.getElementById('complete-counter').textContent = '完成標註數量 0 / 0';
-        updateImageMenu(imagesName);
-        const container = document.getElementById('image-container');
-        const imageDisplay = document.getElementById('image_display');
-        if (imageDisplay) {
-            container.removeChild(imageDisplay);
-        }
-    })
+    logoutBtn.addEventListener('click', logout)
 });
-
+function logout() {
+    localStorage.removeItem('username');
+    localStorage.removeItem('login_set')
+    localStorage.removeItem('login_mode')
+    
+    document.getElementById("form_container").style.display = "block";
+    document.querySelector(".content").style.display = "none";
+    document.querySelector("nav").style.display = "none";
+    classSet = 1;
+    mode = 'annotate'
+    images = [];
+    imagesName = [];
+    currentImageIndex = 0;
+    menuItemsCompleted = [];
+    completedImageName = [];
+    parentImagesName = [];
+    labels = [];
+    annotations = [];
+    prev_index = -1;
+    detections = []; 
+    paddings = [];
+    document.getElementById('image-counter').textContent = '圖片數量 0 / 0';
+    document.getElementById('complete-counter').textContent = '完成標註數量 0 / 0';
+    updateImageMenu(imagesName);
+    const container = document.getElementById('image-container');
+    const imageDisplay = document.getElementById('image_display');
+    if (imageDisplay) {
+        container.removeChild(imageDisplay);
+    }
+    const divs = container.getElementsByClassName('overlay-div');
+    while (divs.length > 0) {
+        divs[0].parentNode.removeChild(divs[0]);
+    }
+    document.getElementById('login-set').selectedIndex = 0;
+    document.getElementById('login-mode').selectedIndex = 0;
+}
 function handleFileSelect(event) {
     const downloadStatus = document.getElementById('download-status')
     downloadStatus.textContent = '圖片上傳中'; 
@@ -269,21 +292,65 @@ function readFileAsDataURL(file) {
         reader.onload = function(event) {
             const img = new Image();
             img.onload = function() {
-                const [newImages, newImageNames] = splitImage(img, file, split_size);
-                images.push(...newImages);
-                imagesName.push(...newImageNames)
-                updateImageMenu(imagesName); 
-                showImage(currentImageIndex, false);
+                // avoid repeat uploading
+                if (parentImagesName.indexOf(file.name.split('.').slice(0, -1).join('.')) === -1) {
+                    const [newImages, newImageNames] = splitImage(img, file, split_size, mode);
+                    images.push(...newImages);
+                    imagesName.push(...newImageNames)
+                    updateImageMenu(imagesName); 
+                    showImage(currentImageIndex, change=false);
+                } 
             };
             img.src = event.target.result;
         };
         reader.onerror = error => reject(error);
         reader.readAsDataURL(file);
     });
-    
 }
 
-function splitImage(image, file, size) {
+async function handleLabelSelect(event) {
+    let files = Array.from(event.target.files);
+    if (!files || files.length === 0) {
+        console.error('未选择文件');
+        return;
+    }
+    const promises = files.filter(f => f.type.match('text/plain')).map(f => readLabel(f));
+}
+
+async function readLabel(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+        const response = await fetch('/upload_yolo_labels', {
+            method: 'POST',
+            body: formData
+        });
+        if (response.ok) {
+            const labels_data = await response.json();
+            if (labels_data !== null) {
+                const index = imagesName.indexOf(labels_data[0].filename);
+
+                if (index !== -1) {
+                    anno_ids[index] = labels_data[0].anno_id
+                    annotations[index] = labels_data[0].annos 
+                    labels[index] = labels_data[0].labels
+                    // showImage(currentImageIndex, modify=true);
+                } else {
+                    console.log(labels_data[0].filename, '.jpg not uploaded')
+                }
+            } else {
+                console.log(labels_data[0].filename, '.txt has no label')
+            }
+        } else {
+            console.error('上传失败:', response.statusText);
+        }
+    } catch (error) {
+        console.error('上传时出错:', error);
+    }
+    showImage(currentImageIndex, modify=true);
+}
+
+function splitImage(image, file, size, mode) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const numH = Math.ceil(image.height / size);
@@ -317,9 +384,10 @@ function splitImage(image, file, size) {
     );
     const images = [];
     const imageNames = [];
-   
+        
     const fileName = file.name.split('.').slice(0, -1).join('.');
-    
+    parentImagesName.push(fileName)
+
     for (let h = 0; h < numH; h++) {
         for (let w = 0; w < numW; w++) {
             const cut_canvas = document.createElement('canvas');
@@ -354,6 +422,13 @@ function splitImage(image, file, size) {
             };
             // childImages.push(child_img)
         }
+    }
+    if (mode === 'modify') {
+        if (image.height === 480  & image.width === 480) {
+            return [[canvas.toDataURL()], [fileName]]
+        } else {
+            console.error("image size wrong")
+        }   
     }
     return [images, imageNames];
 }
@@ -481,7 +556,7 @@ function notInPadding(paddings_list, x, y, bbox_size, ratio) {
    
 }
 
-function showImage(index, change = true) {
+function showImage(index, change = true, modify=false) {
     const container = document.getElementById('image-container');
     const imageDisplay = document.getElementById('image_display');
     if (imageDisplay) {
@@ -494,10 +569,16 @@ function showImage(index, change = true) {
     // const img = document.getElementById('image-display');
     img.src = images[index];
     container.appendChild(img);
+    /*
     if (change & index !== prev_index) {
         updateAnnotations(index);
         prev_index = currentImageIndex;
     }
+    if (modify) {
+        
+    }
+    */
+    updateAnnotations(index);
     // 更新菜单项样式
     const menuItems = document.querySelectorAll('#image-menu li');
     menuItems.forEach((menuItem, menuItemIndex) => {
@@ -571,6 +652,7 @@ function showNextImage() {
 
 
 function updateImageMenu(imageNames) {
+    document.getElementById("image-menu").style.display = "block";
     const menu = document.getElementById('image-menu');
     menu.innerHTML = ''; // 清空菜单内容
     // 为每张图像创建菜单项
@@ -930,7 +1012,7 @@ function download_labeled_images() {
             downloadStatus.textContent = '下载失败，请重试.';
         });
     } else {
-        downloadStatus.textContent = '没有可下载的图片.';
+        downloadStatus.textContent = 'No image completed';
     }
 }
 
@@ -1001,8 +1083,6 @@ async function downloadImage(index) {
     const imageData = images[index]
     const imageName = imagesName[index]
     const downloadImageName = imageName.replace(/\s+/g, '_');
-    console.log(index, downloadImageName)
-
     try {
         // 保存图片
         await fetch('/save_image_for_download', {
@@ -1017,7 +1097,7 @@ async function downloadImage(index) {
         });
 
         // 下载图片
-        const queryString = `?filenames=${encodeURIComponent(JSON.stringify(imageName))}`;
+        const queryString = `?filenames=${encodeURIComponent(JSON.stringify(downloadImageName))}`;
         const response = await fetch(`/download_image${queryString}`, {
             method: 'GET',
             headers: {
