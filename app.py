@@ -85,7 +85,7 @@ def save_image():
     
     output_path = os.path.join(image_folder_path, f'{image_name}.jpg')
     
-    image_data = image_data.split(",")[1]  # Remove the prefix of Base64 encoding if present
+    image_data = image_data.split(",")[1] 
     image_bytes = base64.b64decode(image_data)
     
     image = pilImage.open(io.BytesIO(image_bytes))
@@ -246,12 +246,7 @@ def save_annotations():
     return jsonify({'message': 'Success'})
 
 def get_values(label):
-    id = label["id"]
-    x = label["x"]
-    y = label["y"]
-    w = label["w"]
-    h = label["h"]
-    return [id, x, y, w, h, "work"]
+    return [label["id"], label["x"], label["y"], label["w"], label["h"], "work"]
 
 def yolo2coco(yololabels, image_id, anno_id, img_size):
     id, x, y, w, h, _ = get_values(yololabels)
