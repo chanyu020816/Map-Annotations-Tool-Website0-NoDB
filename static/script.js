@@ -52,6 +52,7 @@ function submitForm(event) {
 }
 
 function displaySet(set) {
+    set = parseInt(set)
     if (classSet === 1) {
         document.getElementById("form_container").style.display = "none";
         document.querySelector(".content").style.display = "block";
@@ -173,59 +174,10 @@ document.addEventListener('DOMContentLoaded', function() {
         format_type = formatSelect.value;
     });
 
-    /*
-    const firstSetBtn = document.getElementById('firstSetBtn');
-    const secondSetBtn = document.getElementById('secondSetBtn');
-    const pagination1_1 = document.getElementById('pagination1_1');
-    const pagination1_2 = document.getElementById('pagination1_2');
-    const pagination2_1 = document.getElementById('pagination2_1');
-    const pagination2_2 = document.getElementById('pagination2_2');
-    const pagination2_3 = document.getElementById('pagination2_3');
-
-    
-    firstSetBtn.addEventListener('click', function() {
-        classSet = 1;
-        pagination1_1.style.display = 'block';
-        pagination1_2.style.display = 'block';
-        pagination2_1.style.display = 'none';
-        pagination2_2.style.display = 'none';
-        pagination2_3.style.display = 'none';
-        firstSetBtn.style = "border: 3px solid red;"
-        secondSetBtn.style.border = "none"
-        
-        const liItems = document.querySelectorAll('li');
-        liItems.forEach(li => {
-            li.classList.remove('ptype', 'active');
-        });
-        const class1ptype = document.getElementById('class1ptype');
-        class1ptype.classList.add('ptype', 'active');
-        ptype = 1;
-    });
-
-    
-    secondSetBtn.addEventListener('click', function() {
-        classSet = 2;
-        pagination1_1.style.display = 'none';
-        pagination1_2.style.display = 'none';
-        pagination2_1.style.display = 'block';
-        pagination2_2.style.display = 'block';
-        pagination2_3.style.display = 'block';
-        firstSetBtn.style.border = "none"
-        secondSetBtn.style = "border: 3px solid red;"
-
-        const liItems = document.querySelectorAll('li');
-        liItems.forEach(li => {
-            li.classList.remove('ptype', 'active');
-        });
-        const class2ptype = document.getElementById('class2ptype');
-        class2ptype.classList.add('ptype', 'active');
-        ptype = 1;
-    });
-    */ 
-
     const logoutBtn = document.getElementById('logout-button');
     logoutBtn.addEventListener('click', logout)
 });
+
 function logout() {
     localStorage.removeItem('username');
     localStorage.removeItem('login_set')
@@ -262,6 +214,7 @@ function logout() {
     document.getElementById('login-set').selectedIndex = 0;
     document.getElementById('login-mode').selectedIndex = 0;
 }
+
 function handleFileSelect(event) {
     const downloadStatus = document.getElementById('download-status')
     downloadStatus.textContent = '圖片上傳中'; 
@@ -866,7 +819,7 @@ function labelreset() {
     labels[currentImageIndex] = []
     const menuItem = document.getElementById(`menu-item-${currentImageIndex}`);
     if (menuItem) {
-        menuItem.classList.remove('completed'); // 添加已完成样式
+        menuItem.classList.remove('completed'); 
     }
     annotations[currentImageIndex] = []
     anno_ids[currentImageIndex] = 0
