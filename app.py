@@ -285,7 +285,7 @@ def yolo2tensorflow(yololabels, class_set, image_name, img_size):
 @app.route('/download_annotations', methods=['GET'])
 def download_annotations():
     class_set = request.args.get('class_set')
-    completed_file_names = request.args.get('filenames').split(';')
+    completed_file_names = request.args.get('filenames').split(',')
     format_type = request.args.get('format_type')
     
     zip_filename = 'annotations.zip'
